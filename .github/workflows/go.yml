@@ -1,0 +1,39 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  #schedule:
+    #- cron: "0 */5 * * *"
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+        
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    
+    - name: Install dependencies
+      run: npm install -g pm2
+      
+    - name: Install ffmpeg
+      run: sudo apt-get install -y ffmpeg && sudo apt-get install -y tesseract-ocr
+
+    - name: Build
+      run: go build -v ./...
+        
+    - name: Test
+       #run: go run main.go ./...
+      run: pm2 start "go run ." --watch ".go" --watch "/.go" --watch "//.go" && pm2 log ./...
